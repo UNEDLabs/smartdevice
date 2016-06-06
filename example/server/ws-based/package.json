@@ -1,0 +1,13 @@
+{
+  "name": "my-cpu-sd-native",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "ws": "^1.1.0"
+  }
+}

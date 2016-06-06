@@ -1,0 +1,141 @@
+<html>
+<head>
+    <title>Test SmartDevice Client</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+
+    <script src="smartdevice-js.js"></script>
+
+    <script type="text/javascript">
+		
+		var ioclient, wsclient;
+		
+		function load() {
+			// create smartdevice client based on socketio
+			ioclient = new SmartDeviceClient({
+				url: "../metadata/metadata_socketio_2.0.json",
+				success: function () {				
+					// Call smartdevice functions
+					var request = { authToken: "", method: "getSensorData", sensorId: "mycpu", updateFrequency: 100, accessRole: "controller" };
+					ioclient.sensor.getSensorData ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("iocpuload").innerHTML = '<pre id="json">' + JSON.stringify(data, undefined, 2) + '</pre>';
+					});
+
+					request = { authToken: "", method: "sendActuatorData", actuatorId: "dummy", accessRole: "controller", valueNames: ["dummyValue"], data: [0] };
+					ioclient.actuator.sendActuatorData ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("iodummy").innerHTML = '<pre id="json">' + JSON.stringify(data, undefined, 2) + '</pre>';
+					});
+
+					request = { method: "getSensorMetadata" };
+					ioclient.sensor.getSensorMetadata ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("iosensorMetadata").innerHTML = '<pre id="json">' + JSON.stringify(data.obj, undefined, 2) + '</pre>';
+					});
+
+					request = { method: "getActuatorMetadata" };
+					ioclient.actuator.getActuatorMetadata ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("ioactuatorMetadata").innerHTML = '<pre id="json">' + JSON.stringify(data.obj, undefined, 2) + '</pre>';
+					});
+				}
+			});
+
+			// create smartdevice client based on websocket
+			wsclient = new SmartDeviceClient({
+				url: "../metadata/metadata_ws_2.0.json",
+				success: function () {				
+					// Call smartdevice functions
+					var request = { authToken: "", method: "getSensorData", sensorId: "mycpu", updateFrequency: 100, accessRole: "controller" };
+					wsclient.sensor.getSensorData ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("wscpuload").innerHTML = '<pre id="json">' + JSON.stringify(data, undefined, 2) + '</pre>';
+					});
+
+					request = { authToken: "", method: "sendActuatorData", actuatorId: "dummy", accessRole: "controller", valueNames: ["dummyValue"], data: [0] };
+					wsclient.actuator.sendActuatorData ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("wsdummy").innerHTML = '<pre id="json">' + JSON.stringify(data, undefined, 2) + '</pre>';
+					});
+
+					request = { method: "getSensorMetadata" };
+					wsclient.sensor.getSensorMetadata ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("wssensorMetadata").innerHTML = '<pre id="json">' + JSON.stringify(data.obj, undefined, 2) + '</pre>';
+					});
+
+					request = { method: "getActuatorMetadata" };
+					wsclient.actuator.getActuatorMetadata ({message: request }, {responseContentType: 'application/json'}, function(data) {
+					   document.getElementById("wsactuatorMetadata").innerHTML = '<pre id="json">' + JSON.stringify(data.obj, undefined, 2) + '</pre>';
+					});
+				}
+			});
+		}
+
+			
+		// listener for smartdevice frecuency changes (sensor)
+		function changeCpuFrecuency(client, value) {
+			if(client == 'socketio') {
+				var request = { authToken: "", method: "getSensorData", sensorId: "mycpu", updateFrequency: parseInt(value), accessRole: "controller" };
+				ioclient.sensor.getSensorData ({message: request }, {responseContentType: 'application/json'});
+			} else {
+				var request = { authToken: "", method: "getSensorData", sensorId: "mycpu", updateFrequency: parseInt(value), accessRole: "controller" };
+				wsclient.sensor.getSensorData ({message: request }, {responseContentType: 'application/json'});			
+			}
+		};
+
+		// listener for smartdevice dummy var changes (actuator)
+		function changeDummyValue(client, value) {
+			if(client == 'socketio') {
+				var request = { authToken: "", method: "sendActuatorData", actuatorId: "dummy", accessRole: "controller", valueNames: ["dummyValue"], data: [value] };
+				ioclient.actuator.sendActuatorData ({message: request }, {responseContentType: 'application/json'});
+			} else {
+				var request = { authToken: "", method: "sendActuatorData", actuatorId: "dummy", accessRole: "controller", valueNames: ["dummyValue"], data: [value] };
+				wsclient.actuator.sendActuatorData ({message: request }, {responseContentType: 'application/json'});
+			}
+		};
+		
+		// listener for view change
+		function changeView() {
+			var value = document.getElementById("mySelect").value;
+			if(value == 'socketio') {
+				document.getElementById("socketio").style.display = 'inline';
+				document.getElementById("purews").style.display = 'none';
+			} else if(value == 'purews'){
+				document.getElementById("socketio").style.display = 'none';
+				document.getElementById("purews").style.display = 'inline';			
+			}
+		}
+		
+    </script>
+</head>
+<body onload="load()">
+
+  <h2>Select SmartDevice Metadata</h2>
+  <select id="mySelect" onchange="changeView()">
+   <option value="socketio">SmartDevice Metadata with Methods EMIT (SocketIO)</option>
+   <option value="purews">SmartDevice Metadata with Methods SEND (Pure Websocket)</option>
+  </select>
+
+  <div id='socketio' style="display: inline;">
+	  <h3>CPU LOAD SENSOR</h3>
+	  <p id="iocpuload"></p>
+	  CPU Sensor Frecuency: <input id="cpufrecuency" type="range" name="points" min="0" max="1000" value="100" onchange="changeCpuFrecuency('socketio',this.value)"> 
+	  <h3>DUMMY ACTUATOR</h3>
+	  <p id="iodummy"></p>
+	  Actuator Value: <input id="dummyvalue" type="range" name="points" min="0" max="1000" value="0" onchange="changeDummyValue('socketio',this.value)"> 
+	  <h3>SENSOR METADATA</h3>
+	  <p id="iosensorMetadata"></p>
+	  <h3>ACTUATOR METADATA</h3>
+	  <p id="ioactuatorMetadata"></p>
+  </div>
+
+  <div id='purews' style="display: none;">
+	  <h3>CPU LOAD SENSOR</h3>
+	  <p id="wscpuload"></p>
+	  CPU Sensor Frecuency: <input id="cpufrecuency" type="range" name="points" min="0" max="1000" value="100" onchange="changeCpuFrecuency('purews',this.value)"> 
+	  <h3>DUMMY ACTUATOR</h3>
+	  <p id="wsdummy"></p>
+	  Actuator Value: <input id="dummyvalue" type="range" name="points" min="0" max="1000" value="0" onchange="changeDummyValue('purews',this.value)"> 
+	  <h3>SENSOR METADATA</h3>
+	  <p id="wssensorMetadata"></p>
+	  <h3>ACTUATOR METADATA</h3>
+	  <p id="wsactuatorMetadata"></p>
+  </div>
+  
+</body>
+</html>
