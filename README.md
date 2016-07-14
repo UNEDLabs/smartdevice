@@ -56,3 +56,6 @@ Smart Device Metadata Specification (original):
 Swagger-based Smart Device Metadata Specification:
 * Felix J. Garcia (https://github.com/felixgarcia)
 * Luis de la Torre (https://github.com/Ravenink)
+
+## Acknowledgment
+Este trabajo es resultado de la estancia 19937/EE/15 financiada por la Fundación Séneca-Agencia de Ciencia y Tecnología de la Región de Murcia con cargo al Programa “Jiménez de la Espada” de Movilidad Investigadora, Cooperación e Internacionalización.
